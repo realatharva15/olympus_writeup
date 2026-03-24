@@ -26,15 +26,23 @@ now we can easily access the webpage. there is nothing much on this webpage so w
 ```bash
 gobuster dir -u http://olympus.thm -w /usr/share/wordlists/dirb/common.txt
 ```
-.htaccess            (Status: 403) [Size: 276]
-.hta                 (Status: 403) [Size: 276]
-.htpasswd            (Status: 403) [Size: 276]
-~webmaster           (Status: 301) [Size: 315] [--> http://olympus.thm/~webmaster/]
-index.php            (Status: 200) [Size: 1948]
-javascript           (Status: 301) [Size: 315] [--> http://olympus.thm/javascript/]
-phpmyadmin           (Status: 403) [Size: 276]
-server-status        (Status: 403) [Size: 276]
-static               (Status: 301) [Size: 311] [--> http://olympus.thm/static/]
+`.htaccess            (Status: 403) [Size: 276]`
+
+`.hta                 (Status: 403) [Size: 276]`
+
+`.htpasswd            (Status: 403) [Size: 276]`
+
+`~webmaster           (Status: 301) [Size: 315] [--> http://olympus.thm/~webmaster/]`
+
+`index.php            (Status: 200) [Size: 1948]`
+
+`javascript           (Status: 301) [Size: 315] [--> http://olympus.thm/javascript/]`
+
+`phpmyadmin           (Status: 403) [Size: 276]`
+
+`server-status        (Status: 403) [Size: 276]`
+
+`static               (Status: 301) [Size: 311] [--> http://olympus.thm/static/]`
 
 the most relevant directory for getting the first flag would be the /~webmaster directory. lets manually enumerate it to find anything useful. on visiting the page, i found out that it user a Victor CMS. now on some google dorking, i found out that the search bar is vulnerable to SQL injections. lets fire up some manual SQLis which i found on the exploit.db report. after injecting the search field, the SQLi was confirmed. i will be using sqlmap to automate the enumeration.
 
@@ -69,15 +77,23 @@ lets run gobuster to find out where the files are being stored.
 ```bash
 gobuster dir -u http://chat.olympus.thm -w /usr/share/wordlists/dirb/common.txt
 ```
-.htaccess            (Status: 403) [Size: 281]
-.hta                 (Status: 403) [Size: 281]
-.htpasswd            (Status: 403) [Size: 281]
-index.php            (Status: 302) [Size: 0] [--> login.php]
-javascript           (Status: 301) [Size: 325] [--> http://chat.olympus.thm/javascript/]
-phpmyadmin           (Status: 403) [Size: 281]
-server-status        (Status: 403) [Size: 281]
-static               (Status: 301) [Size: 321] [--> http://chat.olympus.thm/static/]
-uploads              (Status: 301) [Size: 322] [--> http://chat.olympus.thm/uploads/]
+`.htaccess            (Status: 403) [Size: 281]`
+
+`.hta                 (Status: 403) [Size: 281]`
+
+`.htpasswd            (Status: 403) [Size: 281]`
+
+`index.php            (Status: 302) [Size: 0] [--> login.php]`
+
+`javascript           (Status: 301) [Size: 325] [--> http://chat.olympus.thm/javascript/]`
+
+`phpmyadmin           (Status: 403) [Size: 281]`
+
+`server-status        (Status: 403) [Size: 281]`
+
+`static               (Status: 301) [Size: 321] [--> http://chat.olympus.thm/static/]`
+
+`uploads              (Status: 301) [Size: 322] [--> http://chat.olympus.thm/uploads/]`
 
 here we can see the /uploads directory, but we still have no idea about the name of the reverseshell which is being stored on the /uploads directory. lets use sqlmap with the --fresh-queries flag to get the exact name of the reverseshell which we uploaded. 
 
